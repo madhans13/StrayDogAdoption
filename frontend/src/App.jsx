@@ -16,7 +16,9 @@ function App() {
           <img src={reactLogo} className="logo react" alt="React logo" />
         </a>
       </div>
-      <h1 class="text-3xl font-bold underline">
+      <h1 className="text-3xl font-bold text-blue-200">Tailwind is working!</h1>
+
+      <h1 class="font-bold underline">
         Hello world!
       </h1>
       <h1>Vite + React</h1>
