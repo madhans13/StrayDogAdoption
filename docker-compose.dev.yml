@@ -1,0 +1,75 @@
+
+services:
+  backend:
+    build:
+      context: ./backend
+      target: development
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongo:27017/stray_dogs_dev
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=dev_jwt_secret_change_in_production
+      - CORS_ORIGIN=http://localhost:3000
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - stray-dog-network
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:6.0
+    container_name: stray-dog-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=stray_dogs_dev
+    volumes:
+      - mongo_data:/data/db
+      - ./backend/scripts/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - stray-dog-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: stray-dog-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - stray-dog-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: stray-dog-mongo-express
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongo
+      - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=admin123
+    depends_on:
+      - mongo
+    networks:
+      - stray-dog-network
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  stray-dog-network:
+    driver: bridge
